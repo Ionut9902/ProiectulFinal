@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 
 namespace ProiectulFinal.Models.DBObjects
 {
-    public partial class ProjectContext : DbContext
+    public partial class ProjectContext : IdentityDbContext
+
     {
         public ProjectContext()
         {
@@ -16,12 +18,12 @@ namespace ProiectulFinal.Models.DBObjects
         {
         }
 
-        public virtual DbSet<AspNetRole> AspNetRoles { get; set; } = null!;
-        public virtual DbSet<AspNetRoleClaim> AspNetRoleClaims { get; set; } = null!;
-        public virtual DbSet<AspNetUser> AspNetUsers { get; set; } = null!;
-        public virtual DbSet<AspNetUserClaim> AspNetUserClaims { get; set; } = null!;
-        public virtual DbSet<AspNetUserLogin> AspNetUserLogins { get; set; } = null!;
-        public virtual DbSet<AspNetUserToken> AspNetUserTokens { get; set; } = null!;
+        //public virtual DbSet<AspNetRole> AspNetRoles { get; set; } = null!;
+        //public virtual DbSet<AspNetRoleClaim> AspNetRoleClaims { get; set; } = null!;
+        //public virtual DbSet<AspNetUser> AspNetUsers { get; set; } = null!;
+        //public virtual DbSet<AspNetUserClaim> AspNetUserClaims { get; set; } = null!;
+        //public virtual DbSet<AspNetUserLogin> AspNetUserLogins { get; set; } = null!;
+        //public virtual DbSet<AspNetUserToken> AspNetUserTokens { get; set; } = null!;
         public virtual DbSet<Favourite> Favourites { get; set; } = null!;
         public virtual DbSet<Message> Messages { get; set; } = null!;
         public virtual DbSet<Post> Posts { get; set; } = null!;
@@ -36,8 +38,9 @@ namespace ProiectulFinal.Models.DBObjects
             }
         }
 
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
+       protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            base.OnModelCreating(modelBuilder);
             modelBuilder.Entity<AspNetRole>(entity =>
             {
                 entity.HasIndex(e => e.NormalizedName, "RoleNameIndex")
@@ -81,7 +84,7 @@ namespace ProiectulFinal.Models.DBObjects
                         l => l.HasOne<AspNetRole>().WithMany().HasForeignKey("RoleId"),
                         r => r.HasOne<AspNetUser>().WithMany().HasForeignKey("UserId"),
                         j =>
-                        {
+                       {
                             j.HasKey("UserId", "RoleId");
 
                             j.ToTable("AspNetUserRoles");
@@ -127,107 +130,108 @@ namespace ProiectulFinal.Models.DBObjects
                     .HasForeignKey(d => d.UserId);
             });
 
-            modelBuilder.Entity<Favourite>(entity =>
+            base.OnModelCreating(modelBuilder);
+           modelBuilder.Entity<Favourite>(entity =>
             {
-                entity.HasNoKey();
+               entity.HasNoKey();
 
                 entity.HasOne(d => d.IdPostNavigation)
                     .WithMany()
                     .HasForeignKey(d => d.IdPost)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK_Favourites_Post");
+                   .OnDelete(DeleteBehavior.ClientSetNull)
+                   .HasConstraintName("FK_Favourites_Post");
 
-                entity.HasOne(d => d.IdUserNavigation)
-                    .WithMany()
-                    .HasForeignKey(d => d.IdUser)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK_Favourites_User");
-            });
+           entity.HasOne(d => d.IdUserNavigation)
+               .WithMany()
+                .HasForeignKey(d => d.IdUser)
+               .OnDelete(DeleteBehavior.ClientSetNull)
+               .HasConstraintName("FK_Favourites_User");
+        });
 
-            modelBuilder.Entity<Message>(entity =>
-            {
-                entity.HasKey(e => e.IdMessage)
-                    .HasName("PK__Message__47AAF304CE308EB5");
+        modelBuilder.Entity<Message>(entity =>
+        {
+            entity.HasKey(e => e.IdMessage)
+                .HasName("PK__Message__47AAF304CE308EB5");
 
-                entity.ToTable("Message");
+            entity.ToTable("Message");
 
-                entity.Property(e => e.IdMessage).ValueGeneratedNever();
+            entity.Property(e => e.IdMessage).ValueGeneratedNever();
 
-                entity.Property(e => e.Text)
-                    .HasMaxLength(1000)
-                    .IsUnicode(false);
+            entity.Property(e => e.Text)
+                .HasMaxLength(1000)
+                .IsUnicode(false);
 
-                entity.HasOne(d => d.IdPostNavigation)
-                    .WithMany(p => p.Messages)
-                    .HasForeignKey(d => d.IdPost)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK_Message_Post");
+           entity.HasOne(d => d.IdPostNavigation)
+                .WithMany(p => p.Messages)
+                .HasForeignKey(d => d.IdPost)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Message_Post");
 
-                entity.HasOne(d => d.IdUserNavigation)
-                    .WithMany(p => p.Messages)
-                    .HasForeignKey(d => d.IdUser)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK_Message_User");
-            });
+            entity.HasOne(d => d.IdUserNavigation)
+                .WithMany(p => p.Messages)
+                .HasForeignKey(d => d.IdUser)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Message_User");
+        });
 
-            modelBuilder.Entity<Post>(entity =>
-            {
-                entity.HasKey(e => e.IdPost)
-                    .HasName("PK__Post__F8DCBD4D4DB0B5B9");
+        modelBuilder.Entity<Post>(entity =>
+        {
+            entity.HasKey(e => e.IdPost)
+                .HasName("PK__Post__F8DCBD4D4DB0B5B9");
 
-                entity.ToTable("Post");
+            entity.ToTable("Post");
 
-                entity.Property(e => e.IdPost).ValueGeneratedNever();
+            entity.Property(e => e.IdPost).ValueGeneratedNever();
 
-                entity.Property(e => e.Colour)
-                    .HasMaxLength(50)
-                    .IsUnicode(false);
+            entity.Property(e => e.Colour)
+                .HasMaxLength(50)
+                .IsUnicode(false);
 
-                entity.Property(e => e.Description)
-                    .HasMaxLength(3000)
-                    .IsUnicode(false);
+            entity.Property(e => e.Description)
+                .HasMaxLength(3000)
+                .IsUnicode(false);
 
-                entity.Property(e => e.Edition)
-                    .HasMaxLength(50)
-                    .IsUnicode(false);
+            entity.Property(e => e.Edition)
+                .HasMaxLength(50)
+                .IsUnicode(false);
 
-                entity.Property(e => e.EngineCapacity)
-                    .HasMaxLength(50)
-                    .IsUnicode(false);
+            entity.Property(e => e.EngineCapacity)
+                .HasMaxLength(50)
+                .IsUnicode(false);
 
-                entity.Property(e => e.FuelType)
-                    .HasMaxLength(50)
-                    .IsUnicode(false);
+            entity.Property(e => e.FuelType)
+                .HasMaxLength(50)
+                .IsUnicode(false);
 
-                entity.Property(e => e.Location)
-                    .HasMaxLength(100)
-                    .IsUnicode(false);
+            entity.Property(e => e.Location)
+                .HasMaxLength(100)
+                .IsUnicode(false);
 
-                entity.Property(e => e.Make)
-                    .HasMaxLength(50)
-                    .IsUnicode(false);
+            entity.Property(e => e.Make)
+                .HasMaxLength(50)
+                .IsUnicode(false);
 
-                entity.Property(e => e.Model)
-                    .HasMaxLength(50)
-                    .IsUnicode(false);
+            entity.Property(e => e.Model)
+                .HasMaxLength(50)
+                .IsUnicode(false);
 
-                entity.Property(e => e.NumberOfDoors)
-                    .HasMaxLength(50)
-                    .IsUnicode(false);
+            entity.Property(e => e.NumberOfDoors)
+                .HasMaxLength(50)
+                .IsUnicode(false);
 
-                entity.Property(e => e.VehicleType)
-                    .HasMaxLength(50)
-                    .IsUnicode(false)
-                    .HasColumnName("Vehicle Type");
+            entity.Property(e => e.VehicleType)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("Vehicle Type");
 
-                entity.HasOne(d => d.IdUserNavigation)
-                    .WithMany(p => p.Posts)
-                    .HasForeignKey(d => d.IdUser)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK_Post_User");
-            });
+            entity.HasOne(d => d.IdUserNavigation)
+                .WithMany(p => p.Posts)
+                .HasForeignKey(d => d.IdUser)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Post_User");
+        });
 
-            modelBuilder.Entity<User>(entity =>
+           modelBuilder.Entity<User>(entity =>
             {
                 entity.HasKey(e => e.IdUser)
                     .HasName("PK__User__B7C926384188101F");
